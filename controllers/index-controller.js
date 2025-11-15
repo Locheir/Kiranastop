@@ -156,7 +156,7 @@ module.exports.resetPassRequest = async function(req, res) {
         return res.status(400).json({"success":false, "message": "User with Email was not Found"});
     }
 
-    let resetLink = `http://localhost:${process.env.PORT}/reset-password`
+    let resetLink = `${process.env.BASE_URL}/reset-password`;
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
