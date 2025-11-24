@@ -19,6 +19,11 @@ spec:
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ""
+    command:
+    - dockerd
+    args:
+    - --host=unix:///var/run/docker.sock
+    - --storage-driver=overlay2
 """
     }
   }
@@ -34,6 +39,20 @@ spec:
       steps {
         container('node') {
           sh 'npm install'
+        }
+      }
+    }
+
+    stage('Wait for Docker') {
+      steps {
+        container('docker') {
+          sh '''
+          echo "Waiting for Docker daemon..."
+          for i in {1..15}; do
+            docker info && break
+            sleep 2
+          done
+          '''
         }
       }
     }
@@ -86,7 +105,7 @@ spec:
 
   post {
     success {
-      echo "✅ KiranaStop Deployed Successfully!"
+      echo "✅ KiranaStop Successfully Deployed!"
     }
     failure {
       echo "❌ Deployment Failed"
