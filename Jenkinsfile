@@ -61,8 +61,8 @@ spec:
       steps {
         container('docker') {
           sh """
-          docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-          docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+          docker build --progress=plain -t kirana-stop:${BUILD_NUMBER} .
+          docker tag kirana-stop:${BUILD_NUMBER} kirana-stop:latest
           docker images
           """
         }
