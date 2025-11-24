@@ -6,32 +6,26 @@ apiVersion: v1
 kind: Pod
 spec:
   containers:
-
   - name: node
     image: node:18
     command: ["cat"]
     tty: true
 
-  - name: dind
-    image: docker:24-dind
-    securityContext:
-      privileged: true
-    env:
-      - name: DOCKER_TLS_CERTDIR
-        value: ""
-    command:
-      - dockerd-entrypoint.sh
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:latest
     args:
-      - --host=tcp://127.0.0.1:2375
-      - --host=unix:///var/run/docker.sock
-      - --storage-driver=overlay2
-      - --registry-mirror=https://mirror.gcr.io
+    - --dockerfile=Dockerfile
+    - --context=.
+    - --destination=kirana-stop:latest
+    volumeMounts:
+    - name: kaniko-cache
+      mountPath: /kaniko/.cache
+
+  volumes:
+  - name: kaniko-cache
+    emptyDir: {}
 '''
     }
-  }
-
-  environment {
-    IMAGE_NAME = "kirana-stop"
   }
 
   stages {
@@ -44,44 +38,16 @@ spec:
       }
     }
 
-    stage('Wait for Docker') {
+    stage('Build Image with Kaniko') {
       steps {
-        container('dind') {
+        container('kaniko') {
           sh '''
-          echo "Waiting for Docker daemon..."
-          for i in {1..30}; do
-            docker info && break
-            sleep 3
-          done
-          docker info
-          '''
-        }
-      }
-    }
-
-    stage('Build Docker Image') {
-      steps {
-        container('dind') {
-          sh '''
-          docker build --progress=plain -t kirana-stop:latest .
-          docker images
-          '''
-        }
-      }
-    }
-
-    stage('Run Application') {
-      steps {
-        container('dind') {
-          sh '''
-          docker stop kirana-stop || true
-          docker rm kirana-stop || true
-
-          docker run -d \
-          --name kirana-stop \
-          --restart always \
-          -p 3001:3001 \
-          kirana-stop:latest
+          echo "Building image using Kaniko..."
+          /kaniko/executor \
+            --context=dir://$PWD \
+            --dockerfile=Dockerfile \
+            --destination=kirana-stop:latest \
+            --cleanup
           '''
         }
       }
@@ -90,10 +56,10 @@ spec:
 
   post {
     success {
-      echo "✅ KiranaStop Successfully Deployed!"
+      echo "✅ IMAGE BUILT SUCCESSFULLY WITH KANIKO"
     }
     failure {
-      echo "❌ Deployment Failed"
+      echo "❌ BUILD FAILED"
     }
   }
 }
