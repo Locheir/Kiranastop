@@ -14,9 +14,9 @@ spec:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:latest
     command:
-      - sleep
-    args:
-      - 9999999
+      - sh
+      - -c
+      - "tail -f /dev/null"
     volumeMounts:
     - name: kaniko-cache
       mountPath: /kaniko/.cache
@@ -38,11 +38,12 @@ spec:
       }
     }
 
-    stage('Build Docker Image using Kaniko') {
+    stage('Build Image with Kaniko') {
       steps {
         container('kaniko') {
           sh '''
-          echo "Building image with Kaniko..."
+          echo "🚀 Building Docker image via Kaniko..."
+
           /kaniko/executor \
             --context=dir://$PWD \
             --dockerfile=Dockerfile \
@@ -60,7 +61,7 @@ spec:
       echo "✅ IMAGE BUILT & PUSHED SUCCESSFULLY"
     }
     failure {
-      echo "❌ BUILD FAILED"
+      echo "❌ IMAGE BUILD FAILED"
     }
   }
 }
