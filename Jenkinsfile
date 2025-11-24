@@ -13,24 +13,25 @@ spec:
     tty: true
 
   - name: dind
-    image: docker:dind
-    args:
-      - "--registry-mirror=https://mirror.gcr.io"
-      - "--storage-driver=overlay2"
+    image: docker:24-dind
     securityContext:
       privileged: true
     env:
       - name: DOCKER_TLS_CERTDIR
         value: ""
-
-  volumes: []
+    command:
+      - dockerd-entrypoint.sh
+    args:
+      - --host=tcp://127.0.0.1:2375
+      - --host=unix:///var/run/docker.sock
+      - --storage-driver=overlay2
+      - --registry-mirror=https://mirror.gcr.io
 '''
     }
   }
 
   environment {
     IMAGE_NAME = "kirana-stop"
-    IMAGE_TAG = "${BUILD_NUMBER}"
   }
 
   stages {
@@ -38,7 +39,7 @@ spec:
     stage('Install Dependencies') {
       steps {
         container('node') {
-          sh 'npm install --prefer-offline --no-audit --progress=true'
+          sh 'npm install --prefer-offline --no-audit'
         }
       }
     }
@@ -47,11 +48,12 @@ spec:
       steps {
         container('dind') {
           sh '''
-          echo "Waiting for Docker..."
-          for i in {1..15}; do
+          echo "Waiting for Docker daemon..."
+          for i in {1..30}; do
             docker info && break
-            sleep 2
+            sleep 3
           done
+          docker info
           '''
         }
       }
@@ -62,7 +64,7 @@ spec:
         container('dind') {
           sh '''
           docker build --progress=plain -t kirana-stop:latest .
-          docker image ls
+          docker images
           '''
         }
       }
@@ -88,7 +90,7 @@ spec:
 
   post {
     success {
-      echo "✅ KiranaStop Successfully Deployed"
+      echo "✅ KiranaStop Successfully Deployed!"
     }
     failure {
       echo "❌ Deployment Failed"
