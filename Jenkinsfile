@@ -1,30 +1,30 @@
 pipeline {
   agent {
     kubernetes {
-      yaml """
+      yaml '''
 apiVersion: v1
 kind: Pod
 spec:
   containers:
+
   - name: node
     image: node:18
-    command:
-    - cat
+    command: ["cat"]
     tty: true
 
-  - name: docker
+  - name: dind
     image: docker:dind
+    args:
+      - "--registry-mirror=https://mirror.gcr.io"
+      - "--storage-driver=overlay2"
     securityContext:
       privileged: true
     env:
-    - name: DOCKER_TLS_CERTDIR
-      value: ""
-    command:
-    - dockerd
-    args:
-    - --host=unix:///var/run/docker.sock
-    - --storage-driver=overlay2
-"""
+      - name: DOCKER_TLS_CERTDIR
+        value: ""
+
+  volumes: []
+'''
     }
   }
 
@@ -38,16 +38,16 @@ spec:
     stage('Install Dependencies') {
       steps {
         container('node') {
-          sh 'npm install'
+          sh 'npm install --prefer-offline --no-audit --progress=true'
         }
       }
     }
 
     stage('Wait for Docker') {
       steps {
-        container('docker') {
+        container('dind') {
           sh '''
-          echo "Waiting for Docker daemon..."
+          echo "Waiting for Docker..."
           for i in {1..15}; do
             docker info && break
             sleep 2
@@ -59,53 +59,36 @@ spec:
 
     stage('Build Docker Image') {
       steps {
-        container('docker') {
-          sh """
-          docker build --progress=plain -t kirana-stop:${BUILD_NUMBER} .
-          docker tag kirana-stop:${BUILD_NUMBER} kirana-stop:latest
-          docker images
-          """
-        }
-      }
-    }
-
-    stage('Stop Old Container') {
-      steps {
-        container('docker') {
+        container('dind') {
           sh '''
-          docker stop kirana-stop || true
-          docker rm kirana-stop || true
+          docker build --progress=plain -t kirana-stop:latest .
+          docker image ls
           '''
         }
       }
     }
 
-    stage('Run New Container') {
+    stage('Run Application') {
       steps {
-        container('docker') {
+        container('dind') {
           sh '''
+          docker stop kirana-stop || true
+          docker rm kirana-stop || true
+
           docker run -d \
           --name kirana-stop \
           --restart always \
-          --env-file .env \
           -p 3001:3001 \
           kirana-stop:latest
           '''
         }
       }
     }
-
-    stage('Health Check') {
-      steps {
-        sh 'sleep 10'
-        sh 'curl -I http://localhost:3001 || echo "App not responding"'
-      }
-    }
   }
 
   post {
     success {
-      echo "✅ KiranaStop Successfully Deployed!"
+      echo "✅ KiranaStop Successfully Deployed"
     }
     failure {
       echo "❌ Deployment Failed"
