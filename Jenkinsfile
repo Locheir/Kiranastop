@@ -13,10 +13,10 @@ spec:
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:latest
+    command:
+      - sleep
     args:
-    - --dockerfile=Dockerfile
-    - --context=.
-    - --destination=kirana-stop:latest
+      - 9999999
     volumeMounts:
     - name: kaniko-cache
       mountPath: /kaniko/.cache
@@ -38,16 +38,17 @@ spec:
       }
     }
 
-    stage('Build Image with Kaniko') {
+    stage('Build Docker Image using Kaniko') {
       steps {
         container('kaniko') {
           sh '''
-          echo "Building image using Kaniko..."
+          echo "Building image with Kaniko..."
           /kaniko/executor \
             --context=dir://$PWD \
             --dockerfile=Dockerfile \
-            --destination=kirana-stop:latest \
-            --cleanup
+            --destination=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/kirana/kirana-stop:latest \
+            --skip-tls-verify \
+            --cache=true
           '''
         }
       }
@@ -56,7 +57,7 @@ spec:
 
   post {
     success {
-      echo "✅ IMAGE BUILT SUCCESSFULLY WITH KANIKO"
+      echo "✅ IMAGE BUILT & PUSHED SUCCESSFULLY"
     }
     failure {
       echo "❌ BUILD FAILED"
