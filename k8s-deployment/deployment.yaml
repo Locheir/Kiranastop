@@ -1,79 +1,112 @@
-# =========================
-# Namespace
-# =========================
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kirana-stop
+  name: "2401061" 
 ---
-# =========================
-# Secret (Mongo + Session)
-# =========================
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kirana-stop-secret
-  namespace: kirana-stop
-type: Opaque
-stringData:
-  # 👇 PUT YOUR REAL ATLAS URL (WITHOUT /kiranastopdb IF YOU ALREADY HAVE IT INSIDE)
-  MONGODB_URL: mongodb+srv://admin:M2P3UcuheI5S0q09@mohitcluster.vcmsf.mongodb.net/?appName=mohitcluster
-  SESSION_SECRET_KEY: kiranaSession123
----
-# =========================
-# Deployment
-# =========================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kirana-stop-deployment
-  namespace: kirana-stop
+  name: server
+  namespace: "2401061" 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kirana-stop
+      app: server
   template:
     metadata:
       labels:
-        app: kirana-stop
+        app: server
     spec:
       imagePullSecrets:
-        - name: nexus-secret   # must already exist in this namespace or default
+      - name: nexus-secret
       containers:
-      - name: kirana-stop
-        # 👇 change if your image name is different
-        image: 127.0.0.1:30085/kirana-project/kirana-stop:v1
+      - name: server
+        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/server:latest
         ports:
-        - containerPort: 3001   # your app.js port
+        - containerPort: 3001 # Changed to your PORT=3001
+        # Probes updated to use port 3001
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 15
+          periodSeconds: 10
         env:
+        # Hardcoding environment variables from your .env.example
         - name: PORT
           value: "3001"
+        - name: BASE_URL
+          # Internal Cluster URL based on your PORT
+          value: "http://server-service.2401061.svc.cluster.local:3001" 
+        
+        # Mapping secrets to container environment variables
         - name: MONGODB_URL
           valueFrom:
             secretKeyRef:
-              name: kirana-stop-secret
-              key: MONGODB_URL
+              name: server-secret
+              key: MONGODB_URL # Must match the key created in Jenkinsfile
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: server-secret
+              key: JWT_SECRET_KEY # Must match the key created in Jenkinsfile
         - name: SESSION_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: kirana-stop-secret
-              key: SESSION_SECRET_KEY
+              name: server-secret
+              key: SESSION_SECRET_KEY # New Secret
+        - name: SECRET_RESET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: server-secret
+              key: SECRET_RESET_KEY # New Secret
+        - name: EMAIL_USER
+          valueFrom:
+            secretKeyRef:
+              name: server-secret
+              key: EMAIL_USER # Must match the key created in Jenkinsfile
+        - name: EMAIL_PASS
+          valueFrom:
+            secretKeyRef:
+              name: server-secret
+              key: EMAIL_PASS # Must match the key created in Jenkinsfile
 ---
-# =========================
-# Service
-# =========================
 apiVersion: v1
 kind: Service
 metadata:
-  name: kirana-stop-service
-  namespace: kirana-stop
+  name: server-service
+  namespace: "2401061" 
 spec:
   selector:
-    app: kirana-stop
-  type: NodePort
+    app: server
   ports:
     - protocol: TCP
-      port: 80        # service port (what others in cluster use)
-      targetPort: 3001 # container port
-      nodePort: 30081  # external port on node (change if already used)
+      port: 3001      # Service port (external to pod)
+      targetPort: 3001  # Container port (internal to pod)
+  type: NodePort 
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: "2401061" 
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: 2401061.imcc.com 
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: server-service 
+            port:
+              number: 3001
