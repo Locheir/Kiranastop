@@ -1,0 +1,79 @@
+# =========================
+# Namespace
+# =========================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kirana-stop
+---
+# =========================
+# Secret (Mongo + Session)
+# =========================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kirana-stop-secret
+  namespace: kirana-stop
+type: Opaque
+stringData:
+  # 👇 PUT YOUR REAL ATLAS URL (WITHOUT /kiranastopdb IF YOU ALREADY HAVE IT INSIDE)
+  MONGODB_URL: mongodb+srv://admin:M2P3UcuheI5S0q09@mohitcluster.vcmsf.mongodb.net/?appName=mohitcluster
+  SESSION_SECRET_KEY: kiranaSession123
+---
+# =========================
+# Deployment
+# =========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kirana-stop-deployment
+  namespace: kirana-stop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kirana-stop
+  template:
+    metadata:
+      labels:
+        app: kirana-stop
+    spec:
+      imagePullSecrets:
+        - name: nexus-secret   # must already exist in this namespace or default
+      containers:
+      - name: kirana-stop
+        # 👇 change if your image name is different
+        image: 127.0.0.1:30085/kirana-project/kirana-stop:v1
+        ports:
+        - containerPort: 3001   # your app.js port
+        env:
+        - name: PORT
+          value: "3001"
+        - name: MONGODB_URL
+          valueFrom:
+            secretKeyRef:
+              name: kirana-stop-secret
+              key: MONGODB_URL
+        - name: SESSION_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: kirana-stop-secret
+              key: SESSION_SECRET_KEY
+---
+# =========================
+# Service
+# =========================
+apiVersion: v1
+kind: Service
+metadata:
+  name: kirana-stop-service
+  namespace: kirana-stop
+spec:
+  selector:
+    app: kirana-stop
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80        # service port (what others in cluster use)
+      targetPort: 3001 # container port
+      nodePort: 30081  # external port on node (change if already used)
