@@ -40,7 +40,7 @@ spec:
         IMAGE_TAG       = "latest"
 
         // Nexus Docker Repo
-        REGISTRY_URL    = "nexus.imcc.com:8086"
+        REGISTRY_URL    = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
         REGISTRY_REPO   = "2401061"
 
         // SonarQube
