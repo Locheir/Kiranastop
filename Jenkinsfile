@@ -96,7 +96,9 @@ spec:
         stage('Docker Login') {
             steps {
                 container('dind') {
-                    sh 'docker login $REGISTRY_URL -u $DOCKER_USER -p $DOCKER_PASS'
+                    sh '''
+                        docker login $REGISTRY_URL -u admin -p Changeme@2025
+                    '''
                 }
             }
         }
