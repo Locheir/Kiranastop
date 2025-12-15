@@ -96,18 +96,11 @@ spec:
         stage('Docker Login') {
             steps {
                 container('dind') {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'NEXUS_DOCKER_CREDENTIALS',
-                            usernameVariable: 'DOCKER_USER',
-                            passwordVariable: 'DOCKER_PASS'
-                        )
-                    ]) {
-                        sh 'docker login $REGISTRY_URL -u $DOCKER_USER -p $DOCKER_PASS'
-                    }
+                    sh 'docker login $REGISTRY_URL -u $DOCKER_USER -p $DOCKER_PASS'
                 }
             }
         }
+        
 
         stage('Tag & Push Image') {
             steps {
