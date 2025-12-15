@@ -1,5 +1,5 @@
 # Using Official Node image
-FROM node:18
+FROM node:18-alpine
 
 # Create app directory 
 WORKDIR /app
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install Dependencies
-RUN npm install --prefer-offline --no-audit
+RUN npm install --production
 # Copy the rest of the project
 COPY . .
 
