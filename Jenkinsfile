@@ -25,7 +25,10 @@ spec:
     - name: DOCKER_TLS_CERTDIR
       value: ""
     command: ["dockerd-entrypoint.sh"]
-    args: ["--storage-driver=overlay2"]
+    args:
+    - "--storage-driver=overlay2"
+    - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+
 
   - name: kubectl
     image: bitnami/kubectl:latest
