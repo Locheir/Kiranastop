@@ -8,12 +8,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install Dependencies
-RUN npm install --production
+RUN npm ci --omit=dev
+
 # Copy the rest of the project
 COPY . .
 
 # Expose the port (your app probably runs on 3000)
-EXPOSE 3001
+EXPOSE 3000
 
 # Start the server
 CMD ["node", "app.js"]
