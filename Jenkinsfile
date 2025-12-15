@@ -45,7 +45,7 @@ spec:
 
         // SonarQube
         SONAR_PROJECT   = "2401061-kirana-stop"
-        SONAR_HOST_URL  = "http://sonarqube.imcc.com"
+        SONAR_HOST_URL  = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
     }
 
     stages {
