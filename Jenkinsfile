@@ -45,6 +45,7 @@ spec:
         mountPath: /kube/config
         subPath: kubeconfig
 
+
 '''
         }
     }
