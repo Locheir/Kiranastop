@@ -10,7 +10,7 @@ metadata:
   name: kirana-stop-deployment
   namespace: "2401061"
 spec:
-  replicas:1
+  replicas: 1
   selector:
     matchLabels:
       app: kirana-stop
