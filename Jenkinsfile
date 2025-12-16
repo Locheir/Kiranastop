@@ -146,8 +146,13 @@ spec:
             steps {
                 container('kubectl') {
                     sh '''
+                    # Delete existing deployment to avoid conflicts
+                    kubectl delete deployment kirana-stop-deployment -n 2401061 --ignore-not-found=true
+                    
+                    # Apply all manifests
                     kubectl apply -f k8s/
-                    kubectl rollout restart deployment/kirana-stop-deployment -n 2401061
+                    
+                    # Wait for deployment to be ready
                     kubectl rollout status deployment/kirana-stop-deployment -n 2401061
                     '''
                 }
