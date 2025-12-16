@@ -4,7 +4,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: 2401061
+  name: "2401061"
 
 ---
 # -------------------------------
