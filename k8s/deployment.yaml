@@ -10,7 +10,7 @@ metadata:
   name: kirana-stop-deployment
   namespace: "2401061"
 spec:
-  replicas: 1
+  replicas:1
   selector:
     matchLabels:
       app: kirana-stop
@@ -30,7 +30,6 @@ spec:
             - containerPort: 3000
 
           env:
-            # non-secret
             - name: PORT
               value: "3000"
 
@@ -40,7 +39,6 @@ spec:
             - name: DEBUG
               value: "0"
 
-            # secrets (ONLY valueFrom)
             - name: MONGODB_URL
               valueFrom:
                 secretKeyRef:
