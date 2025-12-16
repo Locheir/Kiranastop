@@ -31,11 +31,8 @@ spec:
           ports:
             - containerPort: 3000
 
-          # -------------------------------
-          # Environment Variables
-          # -------------------------------
           env:
-            # App config
+            # Normal config
             - name: PORT
               value: "3000"
 
@@ -45,7 +42,7 @@ spec:
             - name: DEBUG
               value: "0"
 
-            # Secrets from Kubernetes Secret (created by Jenkins)
+            # Secrets (from Jenkins-created K8s Secret)
             - name: MONGODB_URL
               valueFrom:
                 secretKeyRef:
@@ -82,9 +79,6 @@ spec:
                   name: kirana-stop-secret
                   key: SECRET_RESET_KEY
 
-          # -------------------------------
-          # Resources
-          # -------------------------------
           resources:
             requests:
               cpu: "500m"

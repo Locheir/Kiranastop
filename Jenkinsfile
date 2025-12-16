@@ -142,34 +142,18 @@ spec:
             }
         }
 
-
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
-                    withCredentials([
-                        file(credentialsId: 'mongo_file_2401061', variable: 'MONGO_ENV_FILE')
-                    ]) {
-                        sh '''
-                            echo "Mongo env file path: $MONGO_ENV_FILE"
-
-                            # Load env vars from file
-                            set -a
-                            source $MONGO_ENV_FILE
-                            set +a
-
-                            # Apply Kubernetes manifests
-                            kubectl apply -f k8s/
-
-                            # Restart deployment so env is picked up
-                            kubectl rollout restart deployment/kirana-stop-deployment -n 2401061
-
-                            # Wait for rollout
-                            kubectl rollout status deployment/kirana-stop-deployment -n 2401061
-                        '''
-                    }
+                    sh '''
+                    kubectl apply -f k8s/
+                    kubectl rollout restart deployment/kirana-stop-deployment -n 2401061
+                    kubectl rollout status deployment/kirana-stop-deployment -n 2401061
+                    '''
                 }
             }
         }
+
     }
 
     post {
