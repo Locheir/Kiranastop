@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: kirana-stop-ingress
-  namespace: 2401061
+  namespace: "2401061"
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kirana-stop-service
-  namespace: 2401061
+  namespace: "2401061"
 spec:
   selector:
     app: kirana-stop
