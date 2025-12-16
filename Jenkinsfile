@@ -123,6 +123,26 @@ spec:
             }
         }
 
+        stage('Create / Update K8s Secret') {
+            steps {
+                container('kubectl') {
+                    withCredentials([
+                        file(credentialsId: 'kirana-stop-env', variable: 'ENV_FILE')
+                    ]) {
+                        sh '''
+                        echo "Creating / Updating Kubernetes Secret..."
+
+                        kubectl create secret generic kirana-stop-secret \
+                        --from-env-file=$ENV_FILE \
+                        -n 2401061 \
+                        --dry-run=client -o yaml | kubectl apply -f -
+                        '''
+                    }
+                }
+            }
+        }
+
+
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
