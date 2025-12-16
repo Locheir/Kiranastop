@@ -32,7 +32,7 @@ spec:
             - containerPort: 3000
 
           env:
-            # Normal config
+            # Non-secret values
             - name: PORT
               value: "3000"
 
@@ -42,7 +42,7 @@ spec:
             - name: DEBUG
               value: "0"
 
-            # Secrets (from Jenkins-created K8s Secret)
+            # Secret values (ONLY valueFrom)
             - name: MONGODB_URL
               valueFrom:
                 secretKeyRef:
