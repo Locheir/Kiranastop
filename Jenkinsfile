@@ -36,13 +36,6 @@ spec:
     securityContext:
       runAsUser: 0
       readOnlyRootFilesystem: false
-    env:
-    - name: KUBECONFIG
-      value: /kube/config
-    volumeMounts:
-    - name: kubeconfig-secret
-      mountPath: /kube/config
-      subPath: kubeconfig
 
 '''
         }
