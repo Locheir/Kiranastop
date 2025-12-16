@@ -127,17 +127,24 @@ spec:
             steps {
                 container('kubectl') {
                     withCredentials([
-                        string(credentialsId: 'MONGODB_URL', variable: 'MONGODB_URL')
+                        file(credentialsId: 'mongo_file_2401061', variable: 'MONGO_ENV_FILE')
                     ]) {
                         sh '''
-                        kubectl apply -f k8s/
+                            echo "Mongo env file path: $MONGO_ENV_FILE"
 
-                        kubectl set env deployment/kirana-stop-deployment \
-                            MONGODB_URL="$MONGODB_URL" \
-                            -n 2401061
+                            # Load env vars from file
+                            set -a
+                            source $MONGO_ENV_FILE
+                            set +a
 
-                        kubectl rollout restart deployment/kirana-stop-deployment -n 2401061
-                        kubectl rollout status deployment/kirana-stop-deployment -n 2401061
+                            # Apply Kubernetes manifests
+                            kubectl apply -f k8s/
+
+                            # Restart deployment so env is picked up
+                            kubectl rollout restart deployment/kirana-stop-deployment -n 2401061
+
+                            # Wait for rollout
+                            kubectl rollout status deployment/kirana-stop-deployment -n 2401061
                         '''
                     }
                 }
