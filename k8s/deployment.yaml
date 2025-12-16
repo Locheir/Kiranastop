@@ -1,15 +1,9 @@
-# -------------------------------
-# Namespace (auto-created)
-# -------------------------------
 apiVersion: v1
 kind: Namespace
 metadata:
   name: "2401061"
 
 ---
-# -------------------------------
-# Kirana Stop Deployment
-# -------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,14 +14,13 @@ spec:
   selector:
     matchLabels:
       app: kirana-stop
-
   template:
     metadata:
       labels:
         app: kirana-stop
     spec:
       imagePullSecrets:
-        - name: nexus-secret   # ⚠️ DO NOT CHANGE
+        - name: nexus-secret
 
       containers:
         - name: kirana-stop
@@ -37,28 +30,20 @@ spec:
             - containerPort: 3000
 
           env:
-            env:
             - name: PORT
               value: "3000"
-
             - name: JWT_SECRET_KEY
               value: "jwt_secret_key_here"
-
             - name: SESSION_SECRET_KEY
               value: "session_secret_key_here"
-
             - name: EMAIL_USER
               value: "your_email@gmail.com"
-
             - name: EMAIL_PASS
               value: "email_password_here"
-
             - name: SECRET_RESET_KEY
               value: "reset_secret_key_here"
-
             - name: BASE_URL
               value: "http://2401061.imcc.com"
-
             - name: DEBUG
               value: "0"
 
