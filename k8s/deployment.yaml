@@ -14,12 +14,10 @@ spec:
   selector:
     matchLabels:
       app: kirana-stop
-
   template:
     metadata:
       labels:
         app: kirana-stop
-
     spec:
       imagePullSecrets:
         - name: nexus-secret
@@ -32,7 +30,7 @@ spec:
             - containerPort: 3000
 
           env:
-            # Non-secret values
+            # non-secret
             - name: PORT
               value: "3000"
 
@@ -42,7 +40,7 @@ spec:
             - name: DEBUG
               value: "0"
 
-            # Secret values (ONLY valueFrom)
+            # secrets (ONLY valueFrom)
             - name: MONGODB_URL
               valueFrom:
                 secretKeyRef:
