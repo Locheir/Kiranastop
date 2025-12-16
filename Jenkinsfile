@@ -130,19 +130,19 @@ spec:
                         string(credentialsId: 'MONGODB_URL', variable: 'MONGODB_URL')
                     ]) {
                         sh '''
-                            kubectl apply -f k8s/
+                        kubectl apply -f k8s/
 
-                            kubectl set env deployment/kirana-stop-deployment \
-                            MONGODB_URL=$MONGODB_URL \
+                        kubectl set env deployment/kirana-stop-deployment \
+                            MONGODB_URL="$MONGODB_URL" \
                             -n 2401061
 
-                            kubectl rollout status deployment/kirana-stop-deployment -n 2401061
+                        kubectl rollout restart deployment/kirana-stop-deployment -n 2401061
+                        kubectl rollout status deployment/kirana-stop-deployment -n 2401061
                         '''
                     }
                 }
             }
         }
-
     }
 
     post {
