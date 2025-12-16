@@ -29,22 +29,20 @@ spec:
     - "--storage-driver=overlay2"
     - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
 
-
   - name: kubectl
     image: bitnami/kubectl:latest
     command: ["cat"]
     tty: true
     securityContext:
-        runAsUser: 0
-        readOnlyRootFilesystem: false
+      runAsUser: 0
+      readOnlyRootFilesystem: false
     env:
     - name: KUBECONFIG
-        value: /kube/config
+      value: /kube/config
     volumeMounts:
     - name: kubeconfig-secret
-        mountPath: /kube/config
-        subPath: kubeconfig
-
+      mountPath: /kube/config
+      subPath: kubeconfig
 
 '''
         }
